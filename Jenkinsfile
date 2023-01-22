@@ -1,5 +1,5 @@
 pipeline {
-    agent {label 'master2'}
+    agent { label 'master2' }
 
     stages {
         stage('Hello') {
@@ -8,6 +8,7 @@ pipeline {
                 sh label: 'Test', script: '''
                     pwd
                     ls -l
+		    cp *test /home/a/test
                 '''    
             }
         }
