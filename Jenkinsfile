@@ -20,7 +20,7 @@ pipeline {
                     ls -l
                     cd /home/a/test && ls -l
                     cd $HOME && ls -l
-                    cd $JENKINS_HOME && ls -l
+                    //cd $JENKINS_HOME && ls -l
                 '''    
             }
         }
