@@ -1,5 +1,3 @@
-#!/bin/bash
-
 echo -e "\n NumberJack \n"
 ch=0
 while [[ "$ch" -ne 3 ]]; do
