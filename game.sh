@@ -2,17 +2,17 @@
 
 echo -e "\n NumberJack \n"
 ch=0
-while [ "$ch" -ne 3 ]; do
+while [[ "$ch" -ne 3 ]]; do
     echo  "  
          PLAY : Hit 1 and enter.
          HELP : Hit 2 and enter.
          EXIT : Hit 3 and enter.
          "
     read -rp "Enter your choice : " ch
-    if [ "$ch" -eq 1 ]; then
+    if [[ "$ch" -eq 1 ]]; then
     x=0 ;c=0 ;p=0
     read -rp "Enter any number between 0 and 9 : " n
-    while [ $c -eq 0 ];
+    while [[ $c -eq 0 ]];
     do
         x=11; r=($(shuf -i 0-9 -n 10))
         echo "${r[*]} "; for i in {1..10}; do
