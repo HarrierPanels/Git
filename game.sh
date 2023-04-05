@@ -9,12 +9,12 @@ while [ "$ch" -ne 3 ]; do
          EXIT : Hit 3 and enter.
          "
     read -rp "Enter your choice : " ch
-    if [ "$ch" -eq 1 ];then
+    if [ "$ch" -eq 1 ]; then
     x=0 ;c=0 ;p=0
     read -rp "Enter any number between 0 and 9 : " n
     while [ $c -eq 0 ];
     do
-        x=11; r=("$(shuf -i 0-9 -n 10)")
+        x=11; r=($(shuf -i 0-9 -n 10))
         echo "${r[*]} "; for i in {1..10}; do
             a[i]=$i
         done
@@ -24,7 +24,7 @@ while [ "$ch" -ne 3 ]; do
     c=1
     break
     fi
-if [ "${r[$x-1]}" -eq "$n" ];then
+if [[ "${r[$x-1]}" -eq "$n" ]]; then
             echo "Great"
     ((p=p+1))
         else
@@ -32,12 +32,12 @@ if [ "${r[$x-1]}" -eq "$n" ];then
             break
         fi
     done
-    elif [ "$ch" -eq 2 ]; then
+    elif [[ "$ch" -eq 2 ]]; then
         echo "HELP: INSTRUCTIONS TO PLAY THE GAME. "
 else
         break
 fi
-if [ "$c" -eq 1 ]; then
+if [[ "$c" -eq 1 ]]; then
             echo -e "\nGAME OVER\n"
             echo "You scored $p points"
 fi
