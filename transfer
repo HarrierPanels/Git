@@ -187,3 +187,5 @@ echo "Error: No file specified!"
 printHelp && exit 1 
 fi 
 fi
+--------------------
+
