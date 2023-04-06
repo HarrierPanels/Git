@@ -99,3 +99,91 @@ printHelp
 exit 1
 fi
 fi
+--------------
+#!/bin/bash
+
+# Global variables. 
+currentVersion="0.0.1" 
+
+# Main function to download a single file from transfer.sh. 
+singleDownload() { 
+filename="$3" 
+echo "Downloading $filename" 
+response=$(curl --progress-bar -L "https://transfer.sh/$2/$filename" -o "$1/$filename") 
+echo "Success!" 
+} 
+
+# Function to print output messages during and after downloading. 
+printDownloadResponse() { 
+echo "Downloading $3" 
+progress="--------------------------------------------------" 
+percentage=0 
+while [ $percentage -lt 100 ]; do 
+echo -ne "\r[${progress:0:$percentage/2}] $percentage.0 % complete" 
+percentage=$(($percentage + 2)) 
+sleep 0.2 
+done 
+curl --progress-bar -L "https://transfer.sh/$1/$2" -o "$3/$4" 
+echo -ne "\r[${progress}] 100.0 % complete\n" 
+echo "Success!" 
+} 
+
+# Function to print help message. 
+printHelp() { 
+echo "" 
+echo "Description: Bash tool to transfer files from the command line." 
+echo "Usage: transfer.sh [-d DIRECTORY] [-h] [-v] FILE" 
+echo "Options:" 
+echo " -d DIRECTORY Directory to download to" 
+echo " -h Show this help message" 
+echo " -v Show tool version" 
+echo "" 
+echo "Examples:" 
+echo "./transfer.sh test.txt # Upload test.txt" 
+echo "./transfer.sh test1.txt test2.txt # Upload test1.txt and test2.txt" 
+echo "./transfer.sh -d /tmp xxxxxx file.txt # Download file.txt to /tmp directory" 
+echo "./transfer.sh -v # Show tool version" 
+} 
+
+# Function to print tool version. 
+printVersion() { 
+echo $currentVersion 
+} 
+
+# Parsing the command-line arguments. 
+while getopts ":d:hv" opt; do 
+case ${opt} in 
+d ) directory=$OPTARG ;; 
+h ) printHelp && exit 0 ;; 
+v ) printVersion && exit 0 ;; 
+? ) echo "Invalid option: -$OPTARG" 1>&2 && exit 1 ;; 
+: ) echo "Invalid option: -$OPTARG requires an argument" 1>&2 && exit 1 ;; 
+* ) echo "Unknown error occurred" 1>&2 && exit 1 ;; 
+esac 
+done 
+
+shift $((OPTIND -1)) 
+
+# Main script 
+if [[ -n "${directory}" ]]; then 
+# Downloading a file to the specified directory. 
+singleDownload "${directory}" "${2}" "${3}" 
+else 
+if [[ $# -eq 1 ]]; then 
+# Uploading a single file. 
+response=$(curl --progress-bar --upload-file "${1}" "https://transfer.sh/$(basename "${1}")") 
+echo "Transfer File URL: $response" 
+elif [[ $# -gt 1 ]]; then 
+# Uploading multiple files. 
+for file in "$@"; do 
+echo "Uploading $file" 
+response=$(curl --progress-bar --upload-file "${file}" "https://transfer.sh/") 
+filename=$(basename "${file}") 
+printDownloadResponse "${response##*/}" "${filename}" "$(pwd)" "${filename}" 
+done 
+else 
+# No option or file provided. 
+echo "Error: No file specified!" 
+printHelp && exit 1 
+fi 
+fi
