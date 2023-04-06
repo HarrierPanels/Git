@@ -1,0 +1,101 @@
+#!/bin/bash
+
+# Global
+currentVersion="0.0.1"
+
+# Bash tool to transfer files from the command line using transfer.sh
+# Usage: transfer.sh [-d DIRECTORY] [-h] [-v] FILE
+# Options: # -d Directory to download to
+# -h Show this help message
+# -v Show tool version
+
+# Function to print help message
+printHelp(){
+echo ""
+echo "Description: Bash tool to transfer files from the command line."
+echo "Usage: transfer.sh [-d DIRECTORY] [-h] [-v] FILE"
+echo "Options:"
+echo " -d Directory to download to"
+echo " -h Show this help message"
+echo " -v Show tool version"
+echo ""
+echo "Examples:"
+echo "./transfer.sh test.txt # Upload test.txt"
+echo "./transfer.sh test1.txt test2.txt # Upload test1.txt and test2.txt"
+echo "./transfer.sh -d /tmp test.txt # Download test.txt to /tmp"
+echo "./transfer.sh -v # Show tool version"
+}
+
+# Function to print tool version
+printVersion() {
+echo "$currentVersion"
+}
+
+printUploadResponse() {
+echo "Transfer File URL: $response"
+}
+
+printDownloadResponse() {
+echo "Success!"
+}
+
+# Function to upload a single file
+singleUpload() {
+# Upload file to transfer.sh
+response=$(curl --progress-bar --upload-file "$1" "https://transfer.sh/$(basename $1)")
+# Print download link
+printUploadResponse
+}
+
+# Function to upload multiple files
+multiUpload() {
+# Upload files to transfer.sh
+for file in "$@"; do
+echo "Uploading $file"
+response=$(curl --progress-bar --upload-file "$file" "https://transfer.sh/$(basename $file)")
+printUploadResponse
+done
+}
+
+# Function to download a single file
+singleDownload() {
+# Download file from transfer.sh
+curl -L -o --progress-bar "$1/$(basename $2)" "$2"
+
+# Print success message
+printDownloadResponse
+}
+
+# Parsing command-line arguments
+while getopts ":d:hv" opt; do
+case ${opt} in
+d ) directory=$OPTARG ;;
+h ) printHelp && exit 0 ;;
+v ) printVersion && exit 0 ;;
+\? ) echo "Invalid option: -$OPTARG" 1>&2 && exit 1 ;;
+: ) echo "Invalid option: -$OPTARG requires an argument" 1>&2 && exit 1 ;;
+* ) echo "Unknown error occurred" 1>&2 && exit 1 ;;
+esac
+done
+
+shift $((OPTIND -1))
+
+# Main script
+if [[ -n "${directory}" ]]; then
+# Downloading file to specified directory
+singleDownload "${directory}" "${1}"
+else
+if [[ $# -eq 1 ]]; then
+# Uploading single file
+singleUpload "${1}"
+elif [[ $# -gt 1 ]]; then
+# Uploading multiple files
+multiUpload "$@"
+else
+
+# No option or file provided
+echo "Error: no file specified"
+printHelp
+exit 1
+fi
+fi
