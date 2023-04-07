@@ -1,215 +1,31 @@
 #!/bin/bash
 
-# Global
-currentVersion="0.0.1"
-
-# Bash tool to transfer files from the command line using transfer.sh
-# Usage: transfer.sh [-d DIRECTORY] [-h] [-v] FILE
-# Options: # -d Directory to download to
-# -h Show this help message
-# -v Show tool version
-
-# Function to print help message
-printHelp(){
-echo ""
-echo "Description: Bash tool to transfer files from the command line."
-echo "Usage: transfer.sh [-d DIRECTORY] [-h] [-v] FILE"
-echo "Options:"
-echo " -d Directory to download to"
-echo " -h Show this help message"
-echo " -v Show tool version"
-echo ""
-echo "Examples:"
-echo "./transfer.sh test.txt # Upload test.txt"
-echo "./transfer.sh test1.txt test2.txt # Upload test1.txt and test2.txt"
-echo "./transfer.sh -d /tmp test.txt # Download test.txt to /tmp"
-echo "./transfer.sh -v # Show tool version"
-}
-
-# Function to print tool version
-printVersion() {
-echo "$currentVersion"
-}
-
-printUploadResponse() {
-echo "Transfer File URL: $response"
-}
-
-printDownloadResponse() {
-echo "Success!"
-}
-
-# Function to upload a single file
-singleUpload() {
-# Upload file to transfer.sh
-response=$(curl --progress-bar --upload-file "$1" "https://transfer.sh/$(basename $1)")
-# Print download link
-printUploadResponse
-}
-
-# Function to upload multiple files
-multiUpload() {
-# Upload files to transfer.sh
-for file in "$@"; do
-echo "Uploading $file"
-response=$(curl --progress-bar --upload-file "$file" "https://transfer.sh/$(basename $file)")
-printUploadResponse
-done
-}
-
-# Function to download a single file
-singleDownload() {
-# Download file from transfer.sh
-curl -L -o --progress-bar "$1/$(basename $2)" "$2"
-
-# Print success message
-printDownloadResponse
-}
-
-# Parsing command-line arguments
-while getopts ":d:hv" opt; do
-case ${opt} in
-d ) directory=$OPTARG ;;
-h ) printHelp && exit 0 ;;
-v ) printVersion && exit 0 ;;
-\? ) echo "Invalid option: -$OPTARG" 1>&2 && exit 1 ;;
-: ) echo "Invalid option: -$OPTARG requires an argument" 1>&2 && exit 1 ;;
-* ) echo "Unknown error occurred" 1>&2 && exit 1 ;;
-esac
-done
-
-shift $((OPTIND -1))
-
-# Main script
-if [[ -n "${directory}" ]]; then
-# Downloading file to specified directory
-singleDownload "${directory}" "${1}"
-else
-if [[ $# -eq 1 ]]; then
-# Uploading single file
-singleUpload "${1}"
-elif [[ $# -gt 1 ]]; then
-# Uploading multiple files
-multiUpload "$@"
-else
-
-# No option or file provided
-echo "Error: no file specified"
-printHelp
-exit 1
-fi
-fi
---------------
-#!/bin/bash
-
-# Global variables. 
-currentVersion="0.0.1" 
-
-# Main function to download a single file from transfer.sh. 
-singleDownload() { 
-filename="$3" 
-echo "Downloading $filename" 
-response=$(curl --progress-bar -L "https://transfer.sh/$2/$filename" -o "$1/$filename") 
-echo "Success!" 
-} 
-
-# Function to print output messages during and after downloading. 
-printDownloadResponse() { 
-echo "Downloading $3" 
-progress="--------------------------------------------------" 
-percentage=0 
-while [ $percentage -lt 100 ]; do 
-echo -ne "\r[${progress:0:$percentage/2}] $percentage.0 % complete" 
-percentage=$(($percentage + 2)) 
-sleep 0.2 
-done 
-curl --progress-bar -L "https://transfer.sh/$1/$2" -o "$3/$4" 
-echo -ne "\r[${progress}] 100.0 % complete\n" 
-echo "Success!" 
-} 
-
-# Function to print help message. 
-printHelp() { 
-echo "" 
-echo "Description: Bash tool to transfer files from the command line." 
-echo "Usage: transfer.sh [-d DIRECTORY] [-h] [-v] FILE" 
-echo "Options:" 
-echo " -d DIRECTORY Directory to download to" 
-echo " -h Show this help message" 
-echo " -v Show tool version" 
-echo "" 
-echo "Examples:" 
-echo "./transfer.sh test.txt # Upload test.txt" 
-echo "./transfer.sh test1.txt test2.txt # Upload test1.txt and test2.txt" 
-echo "./transfer.sh -d /tmp xxxxxx file.txt # Download file.txt to /tmp directory" 
-echo "./transfer.sh -v # Show tool version" 
-} 
-
-# Function to print tool version. 
-printVersion() { 
-echo $currentVersion 
-} 
-
-# Parsing the command-line arguments. 
-while getopts ":d:hv" opt; do 
-case ${opt} in 
-d ) directory=$OPTARG ;; 
-h ) printHelp && exit 0 ;; 
-v ) printVersion && exit 0 ;; 
-? ) echo "Invalid option: -$OPTARG" 1>&2 && exit 1 ;; 
-: ) echo "Invalid option: -$OPTARG requires an argument" 1>&2 && exit 1 ;; 
-* ) echo "Unknown error occurred" 1>&2 && exit 1 ;; 
-esac 
-done 
-
-shift $((OPTIND -1)) 
-
-# Main script 
-if [[ -n "${directory}" ]]; then 
-# Downloading a file to the specified directory. 
-singleDownload "${directory}" "${2}" "${3}" 
-else 
-if [[ $# -eq 1 ]]; then 
-# Uploading a single file. 
-response=$(curl --progress-bar --upload-file "${1}" "https://transfer.sh/$(basename "${1}")") 
-echo "Transfer File URL: $response" 
-elif [[ $# -gt 1 ]]; then 
-# Uploading multiple files. 
-for file in "$@"; do 
-echo "Uploading $file" 
-response=$(curl --progress-bar --upload-file "${file}" "https://transfer.sh/") 
-filename=$(basename "${file}") 
-printDownloadResponse "${response##*/}" "${filename}" "$(pwd)" "${filename}" 
-done 
-else 
-# No option or file provided. 
-echo "Error: No file specified!" 
-printHelp && exit 1 
-fi 
-fi
---------------------
-#!/bin/bash
-
 # Description: Bash tool to transfer files from the command line. 
 # Version: 0.0.1
 
 # Define variables 
 currentVersion="0.0.1" 
-multiUpload=0 
+transfer_script=$(basename -- "$0") 
 
 printUploadResponse() {
-echo "Transfer File URL: $fileURL"
+# echo "Transfer File URL: $fileURL"
+echo "Transfer File URL: $output"
+}
+
+printVersion() {
+echo $currentVersion
 }
 
 # Function to upload a single file
 singleUpload() {
 # Use curl to upload file to transfer.sh
 # curl -# -H "Max-Downloads: 1" -H "Max-Days: 1" --upload-file "$1" "https://transfer.sh/$1"
-response=$(curl -# -H "Max-Downloads: 1" -H "Max-Days: 1" --upload-file "$1" "https://transfer.sh/$1")
-fileURL=$(echo "$response" | cut -f1 -d$'\n')
+# response=$(curl -# -H "Max-Downloads: 1" -H "Max-Days: 1" --upload-file "$1" "https://transfer.sh/$1")
+# fileURL=$(echo "$response" | cut -f1 -d$'\n')
+echo "Uploading $(basename "$1")"
+output=$(curl --progress-bar --upload-file "$1" "https://transfer.sh/$(basename "$1")")
 # Print file URL
 printUploadResponse
-# echo "Transfer File URL: $fileURL"
 }
 
 # Function to upload multiple files
@@ -220,85 +36,60 @@ echo "Uploading $file"
 # curl -# -H "Max-Downloads: 1" -H "Max-Days: 1" --upload-file "$file" "https://transfer.sh/$file"
 # response=$(curl -# -H "Max-Downloads: 1" -H "Max-Days: 1" --upload-file "$file" "https://transfer.sh/$file")
 # Extract the file URL from the response
-fileURL=$(echo "$response" | cut -f1 -d$'\n')
+# fileURL=$(echo "$response" | cut -f1 -d$'\n')
+output=$(curl --progress-bar --upload-file "$file" "https://transfer.sh/$(basename "$file")")
 # Print file URL
 printUploadResponse
-# echo "Transfer File URL: $fileURL"
 done
 }
 
-# Function to download a file 
-# singleDownload() { 
-# Use curl to download file from transfer.sh 
-#curl -# -o "$2/$4" "https://transfer.sh/$3/$4" 
-#}
+singleDownload() {
+# Parse arguments
+local dir="${1:?Missing download directory}"
+local id="${2}"
+local filename="${3:?Missing filename}"
 
-###########
-
-# Function to download a file 
-singleDownload() { 
-# Parse arguments 
-local dir="${1:?Missing download directory}" 
-local id="${2:?Missing file ID}" 
-local filename="${3:?Missing filename}" 
-
-# Construct download URL 
-local url="https://transfer.sh/$id/$filename" 
-# Display download progress 
-echo "Downloading '$filename'" 
-echo "" 
-# Download file and display progress 
-curl -# -L "$url" --progress-bar -o "$dir/$filename" 
-echo "" 
-echo "'$filename' downloaded successfully to '$dir'" 
+# Construct download URL
+local url="https://transfer.sh/$id/$filename"
+# Display download progress
+echo "Downloading $filename"
+# Download file and display progress
+curl "$url" --progress-bar -L -o "$dir/$filename"
 }
 
 # Function to display download response 
 printDownloadResponse() { 
-echo "Downloading '$4'" 
-echo "" 
-while true; do 
-response=$(curl --head --silent "https://transfer.sh/$3/$4" | 
-grep -Fi Content-Length | awk '{print $2}') 
-if [[ -n $response ]]; then 
-break 
-fi 
-done 
-fileSize=$response 
-echo "Download size: $((fileSize/1024)) KB" 
-echo "" 
-curl -# --progress-bar "https://transfer.sh/$3/$4" -L -o "$2/$4" 
-echo "" 
 echo "Success!" 
 } 
 
 # Function to display help messages 
 printHelp() { 
 echo "Description: Bash tool to transfer files from the command line." 
-echo "Version: $currentVersion" 
+#echo "Version: $currentVersion" 
 echo "" 
 echo "Usage:" 
 echo " -d <dir> <identifier> <filename> Download a file from transfer.sh to specified directory" 
-echo " -h Show help" 
-echo " -v Show version" 
+echo " -h Show the help" 
+echo " -v Get the tool version" 
 echo "" 
 echo "Examples:" 
 echo " Upload a file:" 
-echo " ./transfer.sh test.txt" 
+echo " ./$transfer_script test.txt" 
 echo "" 
 echo " Upload multiple files:" 
-echo " ./transfer.sh test1.txt test2.png test3.pdf" 
+echo " ./$transfer_script test1.txt test2.png test3.pdf" 
 echo "" 
 echo " Download a file:" 
-echo " ./transfer.sh -d ./dir xxxxxx file.txt" 
+echo " ./$transfer_script -d ./dir xxxxxx test.txt" 
 } 
 
 # Option parsing 
 while getopts ":d:hv" opt; do 
 case $opt in 
-d ) # Download file 
-singleDownload $optind "$OPTARG" "${@:$optind + 1:2}" 
-printDownloadResponse $optind "$OPTARG" "${@:$optind + 1:2}" && exit 0 ;; 
+d ) # Download file
+[ $# -ne 4 ] && echo "4 arguments required, got $#" && exit 1
+singleDownload "$2" "$3" "$4" &&
+printDownloadResponse && exit 0 ;; 
 h ) # Display help 
 printHelp && exit 0 ;; 
 v ) # Display version 
@@ -318,130 +109,3 @@ else
 echo "No files specified" 
 fi 
 fi
-----------
- # Function to download a file 
- singleDownload() { 
- # Check if download directory exists 
- if [ ! -d "$1" ]; then 
- echo "Download directory '$1' does not exist" && exit 1 
- fi 
- # Parse arguments 
- local id="${2:?Missing file ID}" 
- local filename="${3:?Missing filename}"
- # Construct download URL 
- local url="https://transfer.sh/$id/$filename" 
- # Display download progress echo 
- "Downloading '$filename'" 
- echo "" 
- # Download file and display progress 
- curl -# -L "$url" --progress-bar -o "$1/$filename" 
- # Printing download message 
- echo "" 
- echo "'$filename' downloaded successfully to '$1'" 
- } 
- 
- # Function to display download response 
- printDownloadResponse() { 
- # Reply on some download arguments missing 
- if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then 
- echo "Missing arguments for download response" && exit 1 
- fi 
- # Display download progress 
- echo "Downloading '$4'" 
- echo "" 
- # Show download status 
- while true; do 
- response=$(curl --head --silent "https://transfer.sh/$3/$4" | grep -Fi Content-Length | awk '{print $2}') 
- if [[ -n $response ]]; then 
- break 
- fi 
- done 
- # Printing download message 
- fileSize=$(($response/1024)) 
- echo "Download size: ${fileSize} KB" 
- # Download file 
- curl -# --progress-bar "https://transfer.sh/$3/$4" -L -o "$2/$4" 
- # Printing download message 
- echo "" 
- echo "'$4' downloaded successfully to '$2'"
- }
-----------
-# Function to download a file 
-singleDownload() { 
-# Check if download directory exists 
-if [ ! -d "$1" ]; then 
-echo "Download directory '$1' does not exist" 
-exit 1 
-fi 
-# Parse arguments 
-local dir="$1" 
-local id="$2" 
-local filename="$3" 
-# Call printDownloadResponse function to display download progress 
-printDownloadResponse "$dir" "$id" "$filename" 
-} 
-
-# Function to display download response 
-printDownloadResponse() { 
-# Check for missing arguments 
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then 
-echo "Missing arguments for download response" 
-exit 1 
-fi 
-# Display download progress 
-echo "Downloading '$3'" 
-echo "" 
-# Show download status 
-while true; do 
-response=$(curl --head --silent "https://transfer.sh/$2/$3" | grep -Fi Content-Length | awk '{print $2}') 
-if [[ -n $response ]]; then 
-break 
-fi 
-done 
-# Print download message 
-fileSize=$(($response/1024)) 
-echo "Download size: ${fileSize} KB" 
-# Download file 
-curl -# --progress-bar "https://transfer.sh/$2/$3" -L -o "$1/$3" 
-# Print download message 
-echo "" 
-echo "'$3' downloaded successfully to '$1'" 
-}
-==========
-# Function to download a file 
-singleDownload() { 
-# Check if download directory exists 
-if [ ! -d "$1" ]; then 
-echo "Download directory '$1' does not exist" 
-exit 1 
-fi 
-# Parse arguments 
-local dir="$1" 
-local id="$2" 
-local filename="$3" 
-# Call printDownloadResponse function to display download progress 
-# printDownloadResponse "$dir" "$id" "$filename" 
-curl https://transfer.sh/"$id"/"$filename" --progress-bar -L -o "$dir"/"$filename"
-} 
-
----------
-# Option parsing 
-while getopts ":d:hv" opt; do 
-case $opt in 
-d ) # Download file 
-if [ $# -lt $((OPTIND+2)) ]; then 
-echo "Missing arguments for download file option -d" 
-exit 1 
-fi 
-shift $((OPTIND-1)) singleDownload "$1" "$2" "$3" 
-printDownloadResponse "$1" "$2" "$3" 
-exit 0 ;; 
-h ) # Display help 
-printHelp && exit 0 ;; 
-v ) # Display version 
-printVersion && exit 0 ;; 
-\? ) echo "Invalid option: -$OPTARG" 1>&2 && exit 1 ;; 
-: ) echo "Option -$OPTARG requires an argument" 1>&2 && exit 1 ;; 
-esac 
-done
-------------
