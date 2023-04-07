@@ -318,4 +318,50 @@ else
 echo "No files specified" 
 fi 
 fi
-
+----------
+ # Function to download a file 
+ singleDownload() { 
+ # Check if download directory exists 
+ if [ ! -d "$1" ]; then 
+ echo "Download directory '$1' does not exist" && exit 1 
+ fi 
+ # Parse arguments 
+ local id="${2:?Missing file ID}" 
+ local filename="${3:?Missing filename}"
+ # Construct download URL 
+ local url="https://transfer.sh/$id/$filename" 
+ # Display download progress echo 
+ "Downloading '$filename'" 
+ echo "" 
+ # Download file and display progress 
+ curl -# -L "$url" --progress-bar -o "$1/$filename" 
+ # Printing download message 
+ echo "" 
+ echo "'$filename' downloaded successfully to '$1'" 
+ } 
+ 
+ # Function to display download response 
+ printDownloadResponse() { 
+ # Reply on some download arguments missing 
+ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then 
+ echo "Missing arguments for download response" && exit 1 
+ fi 
+ # Display download progress 
+ echo "Downloading '$4'" 
+ echo "" 
+ # Show download status 
+ while true; do 
+ response=$(curl --head --silent "https://transfer.sh/$3/$4" | grep -Fi Content-Length | awk '{print $2}') 
+ if [[ -n $response ]]; then 
+ break 
+ fi 
+ done 
+ # Printing download message 
+ fileSize=$(($response/1024)) 
+ echo "Download size: ${fileSize} KB" 
+ # Download file 
+ curl -# --progress-bar "https://transfer.sh/$3/$4" -L -o "$2/$4" 
+ # Printing download message 
+ echo "" 
+ echo "'$4' downloaded successfully to '$2'"
+ }
