@@ -7,9 +7,13 @@
 currentVersion="0.0.1" 
 transfer_script=$(basename -- "$0") 
 
+httpSingleUpload() {
+response=$(curl --progress-bar --upload-file "$1" "https://transfer.sh/$(basename "$1")")
+}
+
 printUploadResponse() {
 # echo "Transfer File URL: $fileURL"
-echo "Transfer File URL: $output"
+echo "Transfer File URL: $response"
 }
 
 printVersion() {
@@ -23,9 +27,8 @@ singleUpload() {
 # response=$(curl -# -H "Max-Downloads: 1" -H "Max-Days: 1" --upload-file "$1" "https://transfer.sh/$1")
 # fileURL=$(echo "$response" | cut -f1 -d$'\n')
 echo "Uploading $(basename "$1")"
-output=$(curl --progress-bar --upload-file "$1" "https://transfer.sh/$(basename "$1")")
 # Print file URL
-printUploadResponse
+httpSingleUpload "$1"
 }
 
 # Function to upload multiple files
@@ -37,7 +40,7 @@ echo "Uploading $file"
 # response=$(curl -# -H "Max-Downloads: 1" -H "Max-Days: 1" --upload-file "$file" "https://transfer.sh/$file")
 # Extract the file URL from the response
 # fileURL=$(echo "$response" | cut -f1 -d$'\n')
-output=$(curl --progress-bar --upload-file "$file" "https://transfer.sh/$(basename "$file")")
+response=$(curl --progress-bar --upload-file "$file" "https://transfer.sh/$(basename "$file")")
 # Print file URL
 printUploadResponse
 done
@@ -102,7 +105,8 @@ done
 # Upload files if no options were specified 
 if [ $OPTIND -eq 1 ]; then 
 if [ $# -eq 1 ]; then 
-singleUpload "$1" 
+singleUpload "$1" || exit 1
+printUploadResponse
 elif [ $# -gt 1 ]; then 
 multiUpload "$@" 
 else 
